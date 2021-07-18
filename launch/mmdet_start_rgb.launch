@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  
+ 
+  
+  <arg name="model_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/rgb/swin/mask_rcnn_swin_tiny_patch4_window7_1x.pth"/>
+  <arg name="cfg_path" value="/home/wms/object_segmentation/CBNetV2/configs/swin/mask_rcnn_swin_tiny_patch4_window7_mstrain_480-800_adamw_1x_coco.py"/>
+  <arg name="label_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/data/coco_ids.names"/>
+  <arg name="input_image_topic" value="/rgb_cam_01/image_rect_color_sync"/>
+  <arg name="threshold_score" value= "0.1"/>
+   
+ 
+
+  <!-- rosbag play -->
+  <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" />
+
+  
+
+ 
+  <node pkg="mmdet_deploy" type="mmdet_node.py" name="mmdet_node_rgb"  output="screen" required="true">
+    <param name="model_path" value="$(arg model_path)"/>
+    <param name="cfg_file" value="$(arg cfg_path)"/>
+    <param name="label_path" value="$(arg label_path)"/>
+    <param name="input_image_topic" value="$(arg input_image_topic)"/>
+    <param name="threshold_score" value="$(arg threshold_score)"/>
+    <param name="detection_name" value="person"/>
+    
+  </node>
+
+  
+  
+
+</launch>
