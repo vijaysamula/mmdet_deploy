@@ -4,21 +4,21 @@
   
  
   
-  <arg name="model_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/thermal/work_dirs/mask_rcnn_swin_small_patch4_window7_mstrain_480-800_adamw_3x_trimodal/latest.pth"/>
-  <arg name="cfg_path" value="/home/wms/object_segmentation/CBNetV2/configs/thermal/mask_rcnn_swin_small_patch4_window7_mstrain_480-800_adamw_3x_trimodal.py"/>
+  <arg name="model_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/thermal/cbnv2/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal/latest.pth"/>
+  <arg name="cfg_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/thermal/cbnv2/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal.py"/>
   <arg name="label_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/data/coco_ids.names"/>
-  <arg name="input_image_topic" value="/thermal_cam_03/image_rect_color"/>
-  <arg name="threshold_score" value= "0.4"/>
+  <arg name="input_image_topic" value="/thermal_cam_0/image_rect_color"/>
+  <arg name="threshold_score" value= "0.05"/>
    
  
 
   <!-- rosbag play -->
-  <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" />
+  <!-- <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" /> -->
 
   
 
  
-  <node pkg="mmdet_deploy" type="mmdet_node.py" name="mmdet_node_thermal"  output="screen" required="true">
+  <node pkg="mmdet_deploy" type="mmdet_node.py" name="mmdet_thermal"  output="screen" required="true">
     <param name="model_path" value="$(arg model_path)"/>
     <param name="cfg_file" value="$(arg cfg_path)"/>
     <param name="label_path" value="$(arg label_path)"/>
@@ -26,6 +26,9 @@
     <param name="threshold_score" value="$(arg threshold_score)"/>
     <param name="detection_name" value="person"/>
     
+    <param name="device" value="cuda:0"/>
+    <remap from="detection_image" to="/mmdet_thermal/detection_image"/>
+     <remap from="check_for_objects" to="/mmdet_thermal/check_for_objects"/>
   </node>
 
   

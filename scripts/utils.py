@@ -2,16 +2,11 @@
 #from mmsegmentation.build.lib.mmseg.core import seg
 import matplotlib.pyplot as plt
 import mmcv
-import torch
 import numpy as np
-import ros_numpy
-import cv2
-from sensor_msgs.msg import Image
-import pycocotools.mask as mask_util
+import torch
+from darknet_ros_msgs.msg import BoundingBox, BoundingBoxes
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Polygon
-from mmdet_deploy.msg import BoundingBoxInstance,BoundingBoxesInstances,ObjectCount
-
 
 EPS = 1e-2
 
@@ -29,7 +24,7 @@ def color_val_matplotlib(color):
     color = mmcv.color_val(color)
     color = [color / 255 for color in color[::-1]]
     return tuple(color)
-    
+
 
 def class_names(label_path):
     """Maps the lable to class number from tet file
@@ -40,16 +35,17 @@ def class_names(label_path):
     Returns:
         class_list: A list of class names in order.
     """
-   
-    classes = open(label_path,"r")
-   
+
+    classes = open(label_path, "r")
+
     class_list = [i.strip() for i in classes.readlines()]
     return class_list
+
 
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
     e_x = np.exp(x - np.max(x))
-    return e_x / e_x.sum(axis=0)  
+    return e_x / e_x.sum(axis=0)
 
 
 def imshow_det_bboxes(img,
@@ -69,7 +65,6 @@ def imshow_det_bboxes(img,
                       wait_time=0,
                       out_file=None):
     """Draw bboxes and class labels (with scores) on an image.
-
     Args:
         img (str or ndarray): The image to be displayed.
         bboxes (ndarray): Bounding boxes (with scores), shaped (n, 4) or
@@ -92,7 +87,6 @@ def imshow_det_bboxes(img,
         wait_time (float): Value of waitKey param. Default: 0.
         out_file (str, optional): The filename to write the image.
             Default: None
-
     Returns:
         ndarray: The image with bboxes drawn on it.
     """
@@ -105,7 +99,7 @@ def imshow_det_bboxes(img,
     assert bboxes.shape[1] == 4 or bboxes.shape[1] == 5, \
         f' bboxes.shape[1] should be 4 or 5, but its {bboxes.shape[1]}.'
     img = mmcv.imread(img).astype(np.uint8)
-    
+
     if score_thr > 0:
         assert bboxes.shape[1] == 5
         scores = bboxes[:, -1]
@@ -114,17 +108,21 @@ def imshow_det_bboxes(img,
         labels = labels[inds]
         if segms is not None:
             segms = segms[inds, ...]
-            
 
     mask_colors = []
     if labels.shape[0] > 0:
         if mask_color is None:
+            # Get random state before set seed, and restore random state later.
+            # Prevent loss of randomness.
+            # See: https://github.com/open-mmlab/mmdetection/issues/5844
+            state = np.random.get_state()
             # random color
             np.random.seed(42)
             mask_colors = [
                 np.random.randint(0, 256, (1, 3), dtype=np.uint8)
                 for _ in range(max(labels) + 1)
             ]
+            np.random.set_state(state)
         else:
             # specify  color
             mask_colors = [
@@ -154,31 +152,31 @@ def imshow_det_bboxes(img,
 
     polygons = []
     color = []
-    arr_bbox = BoundingBoxesInstances()
+    arr_bbox = BoundingBoxes()
     for i, (bbox, label) in enumerate(zip(bboxes, labels)):
         label_text = class_names[
             label] if class_names is not None else f'class {label}'
-        if (label_text!=detection_name): continue
-        bb = BoundingBoxInstance()
+        if (label_text != detection_name):
+            continue
+        bb = BoundingBox()
         bb.probability = bbox[-1]
-        bb.xmin = bbox[0].item()
-        bb.ymin = bbox[1].item()
-        bb.xmax = bbox[2].item()
-        bb.ymax = bbox[3].item()    
+        bb.xmin = int(bbox[0].item())
+        bb.ymin = int(bbox[1].item())
+        bb.xmax = int(bbox[2].item())
+        bb.ymax = int(bbox[3].item())
         bb.Class = label_text
-        
+        arr_bbox.bounding_boxes.append(bb)
 
-        if len(bbox) > 4:
-            label_text += f'|{bbox[-1]:.02f}'
-            
         bbox_int = bbox.astype(np.int32)
         poly = [[bbox_int[0], bbox_int[1]], [bbox_int[0], bbox_int[3]],
                 [bbox_int[2], bbox_int[3]], [bbox_int[2], bbox_int[1]]]
         np_poly = np.array(poly).reshape((4, 2))
         polygons.append(Polygon(np_poly))
         color.append(bbox_color)
-        
-   
+        label_text = class_names[
+            label] if class_names is not None else f'class {label}'
+        if len(bbox) > 4:
+            label_text += f'|{bbox[-1]:.02f}'
         ax.text(
             bbox_int[0],
             bbox_int[1],
@@ -196,15 +194,10 @@ def imshow_det_bboxes(img,
         if segms is not None:
             color_mask = mask_colors[labels[i]]
             mask = segms[i].astype(bool)
-            mask_np =np.where(segms[i]==1,255,segms[i])
-            #mask_cv = cv2.from_array(mask_np),
-            bb.mask = ros_numpy.msgify(Image,mask_np.astype(np.uint8), encoding='mono8')
             img[mask] = img[mask] * 0.5 + color_mask * 0.5
-        else :
-            bb.mask = None
 
-        arr_bbox.bounding_boxes.append(bb)
-    plt.imshow(img)
+    if show:
+        plt.imshow(img)
 
     p = PatchCollection(
         polygons, facecolor='none', edgecolors=color, linewidths=thickness)
@@ -216,7 +209,6 @@ def imshow_det_bboxes(img,
     rgb, alpha = np.split(img_rgba, [3], axis=2)
     img = rgb.astype('uint8')
     img = mmcv.rgb2bgr(img)
-
     if show:
         # We do not use cv2 for display because in some cases, opencv will
         # conflict with Qt, it will output a warning: Current thread
@@ -232,23 +224,24 @@ def imshow_det_bboxes(img,
 
     plt.close()
 
-    return img,arr_bbox
+    return img, arr_bbox
+
 
 def show_result(
-                img,
-                result,
-                label_path,
-                detection_name,
-                score_thr=0.3,
-                bbox_color=(72, 101, 241),
-                text_color=(72, 101, 241),
-                mask_color=None,
-                thickness=2,
-                font_size=13,
-                win_name='',
-                show=False,
-                wait_time=0,
-                out_file=None):
+        img,
+        result,
+        label_path,
+        detection_name,
+        score_thr=0.3,
+        bbox_color=(72, 101, 241),
+        text_color=(72, 101, 241),
+        mask_color=None,
+        thickness=2,
+        font_size=13,
+        win_name='',
+        show=False,
+        wait_time=0,
+        out_file=None):
     """Draw `result` over `img`.
 
     Args:
@@ -282,11 +275,10 @@ def show_result(
     if isinstance(result, tuple):
         bbox_result, segm_result = result
         if isinstance(segm_result, tuple):
-            print(segm_result[0])
             segm_result = segm_result[0]  # ms rcnn
     else:
         bbox_result, segm_result = result, None
-    
+
     bboxes = np.vstack(bbox_result)
     labels = [
         np.full(bbox.shape[0], i, dtype=np.int32)
@@ -301,15 +293,15 @@ def show_result(
             segms = torch.stack(segms, dim=0).detach().cpu().numpy()
         else:
             segms = np.stack(segms, axis=0)
-    
+
     # segm_person_image = None
     # if segms is not None:
     #     if segms[0] is not None:
     #         # print(segm_result[0])
-    #         segm_result_np = np.where(segms == 1, 255,segms ) 
+    #         segm_result_np = np.where(segms == 1, 255,segms )
     #         # print(segm_result_np.shape)
     #         segm_person_tensor = torch.tensor(segm_result_np,dtype=torch.float32)
-            
+
     #         #segm_person_tensor = torch.stack(segm_person_tensor, dim=0)
     #         print("----------------------------------------------3")
     #         print(segm_person_tensor.shape)
@@ -323,7 +315,7 @@ def show_result(
     if out_file is not None:
         show = False
     # draw bounding boxes
-    img,arr_bbox = imshow_det_bboxes(
+    img, arr_bbox = imshow_det_bboxes(
         img,
         bboxes,
         labels,
@@ -342,4 +334,4 @@ def show_result(
         out_file=out_file)
 
     if not (show or out_file):
-        return img,arr_bbox 
+        return img, arr_bbox
