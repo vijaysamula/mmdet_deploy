@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+    <!--- Sim Time -->
+    <!-- <param name="/use_sim_time" value="true" /> -->
+
+     <!-- rosbag play -->
+  <!-- <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" /> -->
+  <include file="$(find mmdet_deploy)/launch/mmdet_start_thermal.launch" />
+  <include file="$(find mmdet_deploy)/launch/mmdet_start_rgb.launch" />
+
+<arg name="topics_name" default="/heatmapper3d_mmdetrgb/layered_heatmaps
+                                  /heatmapper3d_mmdetrgb/occupancy_cloud
+                                  /heatmapper3d_mmdetthermal/layered_heatmaps
+                                  /heatmapper3d_mmdetthermal/occupancy_cloud"/>
+<node pkg="rosbag" type="record" name="rosbag_record" output="screen"
+        args="$(arg topics_name) -O /shared/thesis/rosbags/wms_thesis_new_threed/crowded/mmdet_cbnetv2.bag">
+</node>
+     
+</launch>

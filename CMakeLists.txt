@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
+  darknet_ros_msgs
   
 )
 
@@ -41,17 +42,17 @@ find_package(PkgConfig REQUIRED)
 # endif (yaml-cpp_FOUND)
 
 
-add_message_files(
-  FILES
-    BoundingBoxInstance.msg
-    BoundingBoxesInstances.msg
-    ObjectCount.msg
-)
+# add_message_files(
+#   FILES
+#     BoundingBox.msg
+#     BoundingBoxes.msg
+#     ObjectCount.msg
+# )
 
-add_service_files(
-  FILES
-    CheckForObjects.srv
-)
+# add_service_files(
+#   FILES
+#     CheckForObjects.srv
+# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

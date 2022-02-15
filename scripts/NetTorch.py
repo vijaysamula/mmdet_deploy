@@ -1,23 +1,18 @@
 import warnings
-
 import mmcv
 import numpy as np
 import torch
 from mmcv.ops import RoIPool
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
-
 from mmdet.core import get_classes
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.datasets.pipelines import Compose
 from mmdet.models import build_detector
 
 
-
-
 class InferenceModel:
-    """Deprecated.
-
+    """
     A simple pipeline to load image.
     """
 
@@ -47,8 +42,7 @@ class InferenceModel:
         results['ori_shape'] = img.shape
         return results
 
-    def init_detector(self,config, checkpoint=None, device='cuda:0', cfg_options=None):
-
+    def init_detector(self, config, checkpoint=None, device='cuda:0', cfg_options=None):
         """Initialize a detector from config file.
 
         Args:
@@ -74,13 +68,14 @@ class InferenceModel:
         model = build_detector(config.model, test_cfg=config.get('test_cfg'))
         if checkpoint is not None:
             map_loc = 'cpu' if device == 'cpu' else None
-            checkpoint = load_checkpoint(model, checkpoint, map_location=map_loc)
+            checkpoint = load_checkpoint(
+                model, checkpoint, map_location=map_loc)
             if 'CLASSES' in checkpoint.get('meta', {}):
                 model.CLASSES = checkpoint['meta']['CLASSES']
             else:
                 warnings.simplefilter('once')
                 warnings.warn('Class names are not saved in the checkpoint\'s '
-                            'meta data, use COCO classes by default.')
+                              'meta data, use COCO classes by default.')
                 model.CLASSES = get_classes('coco')
         model.cfg = config  # save the config in the model for convenience
         model.to(device)
@@ -147,12 +142,9 @@ def inference_detector(model, imgs):
     # forward the model
     with torch.no_grad():
         results = model(return_loss=False, rescale=True, **data)
-   
 
-    #print(results[0][1])
+    # print(results[0][1])
     if not is_batch:
         return results[0]
     else:
         return results
-
-

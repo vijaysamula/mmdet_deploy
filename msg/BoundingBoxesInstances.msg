@@ -1,3 +1,0 @@
-Header header
-Header image_header
-BoundingBoxInstance[] bounding_boxes
