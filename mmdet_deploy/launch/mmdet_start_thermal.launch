@@ -4,16 +4,16 @@
   
  
   
-  <arg name="model_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/thermal/cbnv2/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal/latest.pth"/>
-  <arg name="cfg_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/checkpoints/thermal/cbnv2/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal/mask_rcnn_cbv2_swin_small_patch4_window7_mstrain_480-800_adamw_3x_thermal.py"/>
-  <arg name="label_path" value="/home/wms/object_segmentation/mmdet_ws/src/mmdet_deploy/data/coco_ids.names"/>
+  <arg name="model_path" value="/home/vijay/thesis/repos/scnet_r50_fpn_1x_coco-c3f09857.pth"/>
+  <arg name="cfg_path" value="/home/wms/2d_object_detection/mmdetection/configs/scnet/scnet_r50_fpn_1x_coco.py"/>
+  <arg name="label_path" value="/home/wms/2d_object_detection/mmdet_ws/src/mmdet_deploy/data/coco_ids.names"/>
   <arg name="input_image_topic" value="/thermal_cam_0/image_rect_color"/>
   <arg name="threshold_score" value= "0.05"/>
    
  
 
   <!-- rosbag play -->
-  <!-- <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" /> -->
+  <include file="$(find mmdet_deploy)/launch/play_rosbag.launch" />
 
   
 
