@@ -1,4 +1,4 @@
-#!/opt/conda/bin/python
+#!/usr/bin/env python3
 '''
 This is a inference node where the detections are infered from the image.
 '''

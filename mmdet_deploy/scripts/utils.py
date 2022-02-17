@@ -1,4 +1,4 @@
-#!/opt/conda/bin/python
+#!/usr/bin/env python3
 #from mmsegmentation.build.lib.mmseg.core import seg
 import matplotlib.pyplot as plt
 import mmcv

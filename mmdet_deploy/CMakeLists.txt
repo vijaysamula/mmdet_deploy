@@ -27,8 +27,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 
-set(CMAKE_PREFIX_PATH "/opt/libtorch")
-find_package(Torch REQUIRED )
+# set(CMAKE_PREFIX_PATH "/opt/libtorch")
+# find_package(Torch REQUIRED )
 find_package(OpenCV REQUIRED )
 
 find_package(PkgConfig REQUIRED)
@@ -72,8 +72,6 @@ catkin_package(
 
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS 
-  include
  LIBRARIES 
  CATKIN_DEPENDS 
   cv_bridge 
@@ -96,7 +94,7 @@ include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
-                    ${TORCH_INCLUDE_DIRS}
+                    
 )
 
 #############
