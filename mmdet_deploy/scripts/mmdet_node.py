@@ -6,6 +6,7 @@ This is a inference node where the detections are infered from the image.
 
 import time
 from pathlib import Path
+
 import numpy as np
 import ros_numpy
 import rospy
