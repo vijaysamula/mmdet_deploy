@@ -25,7 +25,6 @@ RUN wget -qO - https://apt.kitware.com/keys/kitware-archive-latest.asc | apt-key
     apt install cmake --upgrade -y
 
 # python packages
-RUN FORCE_CUDA="1"
 RUN pip3 install -U pip
 RUN pip3 install numpy==1.16.4 \
   onnx==1.5.0 \
@@ -43,7 +42,6 @@ RUN pip3 install numpy==1.16.4 \
   plyfile \
   trimesh==2.35.39 \
   networkx==2.2 \
-  mmcv-full==1.4.0 \
   mmdet==2.14.0
   
 
@@ -112,8 +110,7 @@ ADD . $HOME/2d_object_detection/mmdet_ws/src/
 ENV FORCE_CUDA="1"
 RUN cd $HOME/2d_object_detection/mmdetection && \
      pip install --no-cache-dir -r requirements/build.txt && \
-     pip install --no-cache-dir -e . && pip uninstall mmcv-full && \
-     pip install mmcv-full==1.4.0
+     pip install --no-cache-dir -e . 
 
 
 
